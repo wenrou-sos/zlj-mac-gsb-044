@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('./db');
 const { validIdCard, validPhone, calcFinance, generateTourCode, nightsBetween } = require('./helpers');
 const inv = require('./inventory');
+const warnings = require('./warnings');
 
 const router = express.Router();
 
@@ -19,11 +20,16 @@ function handleTxn(res, fn) {
 /* ---------------- 仪表盘 ---------------- */
 router.get('/stats', (req, res) => {
   const one = (sql, ...p) => db.prepare(sql).get(...p);
+  let warnSummary = null;
+  try {
+    warnSummary = warnings.collectWarnings({ filter: { level: req.query.warn_level || undefined } }).summary;
+  } catch { warnSummary = { 高: 0, 中: 0, 低: 0 }; }
   res.json({
     products: one('SELECT COUNT(*) c FROM products WHERE active=1').c,
     tours: one('SELECT COUNT(*) c FROM tours').c,
     openTours: one("SELECT COUNT(*) c FROM tours WHERE status='收客中'").c,
     tourists: one("SELECT COUNT(*) c FROM tourists WHERE status!='已退团'").c,
+    warnings: warnSummary,
     finance: (() => {
       const all = db.prepare('SELECT id FROM tours').all();
       let revenue = 0, cost = 0;
@@ -572,6 +578,43 @@ router.post('/allocations/:id/confirm', (req, res) => {
 router.post('/allocations/:id/release', (req, res) => {
   const result = handleTxn(res, () => inv.releaseAllocationTxn(req.params.id, req.body?.reason || '手工释放'));
   if (result) res.json(result.allocation);
+});
+
+/* ================= 采购资源预警中心 ================= */
+// GET /api/warnings?level=高&resource_type=航班&supplier_id=1&date_from=&date_to=&types=low_stock,stale_pending
+router.get('/warnings', (req, res) => {
+  const q = req.query;
+  const filter = {};
+  if (q.level && warnings.LEVELS.includes(q.level)) filter.level = q.level;
+  if (q.resource_type && warnings.RESOURCE_TYPES.includes(q.resource_type)) filter.resource_type = q.resource_type;
+  if (q.supplier_id) filter.supplier_id = q.supplier_id;
+  if (q.date_from) filter.date_from = q.date_from;
+  if (q.date_to) filter.date_to = q.date_to;
+
+  const config = {};
+  for (const k of ['horizonDays', 'lowStockRatio', 'staleHours', 'staleHighHours', 'driftRatio', 'driftHighRatio', 'tourDueDays']) {
+    if (q[k] !== undefined && q[k] !== '') {
+      const v = Number(q[k]);
+      if (Number.isFinite(v)) config[k] = v;
+    }
+  }
+
+  let types;
+  if (q.types) {
+    types = String(q.types).split(',').map(s => s.trim()).filter(t => warnings.WARNING_TYPES.includes(t));
+    if (!types.length) return res.status(400).json({ error: '预警类型参数无效' });
+  }
+
+  res.json(warnings.collectWarnings({ filter, config, types }));
+});
+
+// 预警概要（供工作台徽标/入口使用，仅返回计数）
+router.get('/warnings/summary', (req, res) => {
+  const r = warnings.collectWarnings();
+  res.json({
+    today: r.today, horizon_days: r.horizon_days,
+    total: r.total, summary: r.summary, by_type: r.by_type
+  });
 });
 
 function simpleUpdate(table, req, res, fields) {

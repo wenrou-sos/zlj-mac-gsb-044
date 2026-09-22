@@ -354,3 +354,50 @@ textarea.input { resize: vertical; }
 .released-box { margin-top: 10px; border-top: 1px dashed var(--line); padding-top: 8px; }
 .released-box summary { cursor: pointer; font-size: 12.5px; color: var(--ink-3); padding: 4px 0; }
 
+
+/* ---------- 采购资源预警中心 ---------- */
+.warn-stat { text-align: left; border: 1px solid var(--line); cursor: pointer; font: inherit; }
+.warn-stat:hover { box-shadow: var(--shadow-lg); transform: translateY(-1px); }
+.warn-stat.is-active { outline: 2px solid var(--teal); outline-offset: 1px; box-shadow: var(--shadow-lg); }
+
+.warn-type-strip { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.warn-type-chip {
+  display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line);
+  background: #fff; border-radius: 20px; padding: 7px 15px; font-size: 13px; color: var(--ink-2);
+  transition: .15s;
+}
+.warn-type-chip:hover { border-color: var(--teal); color: var(--teal-dark); }
+.warn-type-chip strong {
+  background: #f1f5f9; border-radius: 20px; padding: 0 9px; font-size: 12px; color: var(--ink-3);
+}
+.warn-type-chip.has strong { background: #ffedd5; color: #c2410c; }
+.warn-type-chip.on { background: var(--teal); border-color: var(--teal); color: #fff; }
+.warn-type-chip.on strong { background: rgba(255,255,255,.25); color: #fff; }
+
+.warn-toolbar { flex-wrap: wrap; align-items: flex-end; }
+.warn-toolbar .input { max-width: 200px; }
+.warn-date { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-3); }
+.warn-date .input { max-width: 140px; }
+
+.warn-table td, .warn-table th { vertical-align: top; }
+.warn-level { font-weight: 600; }
+.warn-kind { font-weight: 500; }
+.warn-detail { max-width: 460px; line-height: 1.6; }
+.warn-metrics { display: block; margin-top: 3px; font-size: 12px; color: var(--ink-3); }
+
+/* 工作台预警横幅 */
+.warn-banner {
+  display: flex; align-items: center; gap: 14px; background: #fff;
+  border: 1px solid #fed7aa; border-left: 4px solid var(--orange);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px 20px;
+  margin-bottom: 22px; color: var(--ink); transition: .15s;
+}
+.warn-banner:hover { box-shadow: var(--shadow-lg); transform: translateY(-1px); }
+.warn-banner.is-high { border-color: #fecaca; border-left-color: var(--red); }
+.warn-banner.is-ok { border-color: #bbf7d0; border-left-color: var(--green); }
+.warn-banner-icon { font-size: 26px; }
+.warn-banner-text { display: flex; flex-direction: column; gap: 2px; }
+.warn-banner-text strong { font-size: 14.5px; }
+.warn-banner-text span { font-size: 13px; color: var(--ink-2); }
+.warn-banner-text em { font-style: normal; font-weight: 600; margin: 0; }
+.warn-banner-go { margin-left: auto; color: var(--teal-dark); font-weight: 600; font-size: 13px; white-space: nowrap; }

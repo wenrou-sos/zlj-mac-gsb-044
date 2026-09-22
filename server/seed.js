@@ -178,4 +178,28 @@ inv.createAllocationTxn({
   start_date: '2026-10-01', end_date: '2026-10-02', create_booking: 0, remarks: '团1加房'
 });
 
-console.log('种子数据已写入：2 个产品、2 个团队、37 名游客、5 家供应商、6 条采购资源及 7 条资源池占用（含待确认/已确认）');
+/* ================= 预警中心演示数据 ================= */
+// 1) 待确认超时：把团2回程/地接占用的创建时间回拨 3 天（>72h → 高风险）
+db.prepare("UPDATE resource_allocations SET created_at=datetime('now','-3 days') WHERE tour_id=? AND status='待确认'").run(t2);
+
+// 2) 停售但仍有有效占用：新增一条包机资源，团1占位并确认后供应商停售（现实中的已切位包机下架场景）
+const resStopped = insRes.run(supAir, '航班', 'MU5810', '', '昆明长水 → 上海虹桥', '回程',
+  '2026-10-06', null, 20, 750, '在售', '包机提前售罄停售，占用需特批或改签').lastInsertRowid;
+inv.createAllocationTxn({ resource_id: resStopped, tour_id: t1, qty: 16, create_booking: 0, remarks: '停售航班占位' });
+const aStopped = db.prepare("SELECT id FROM resource_allocations WHERE resource_id=? AND tour_id=?").get(resStopped, t1).id;
+inv.confirmAllocationTxn(aStopped);
+db.prepare("UPDATE resources SET status='停售' WHERE id=?").run(resStopped);
+
+// 3) 成本快照偏离：团2去程快照 520，供应商已上调当前采购价至 690（+32.7% → 高风险）
+db.prepare('UPDATE resources SET unit_price=690 WHERE id=?').run(resFlightGo);
+
+// 4) 临近出发未确认完整：新增一个 3 天后出发的近团（有在团游客，缺回程/酒店未确认/无地接）
+const t3 = insT.run('TH20260925-001', p2, '2026-09-25', '2026-09-29', 18, '收客中', '陈小舟').lastInsertRowid;
+db.prepare(`INSERT INTO tourists (tour_id, name, id_card, phone, room_type, price)
+  VALUES (?,?,?,?,?,?)`).run(t3, '林晚', '310101199105056788', '13600009999', '双人房', 2880);
+db.prepare(`INSERT INTO flight_bookings (tour_id, direction, flight_no, flight_date, route, seats, unit_price, confirmed)
+  VALUES (?, '去程', 'CZ3869', '2026-09-25', '杭州萧山 → 三亚凤凰', 18, 520, 1)`).run(t3);
+db.prepare(`INSERT INTO hotel_bookings (tour_id, hotel_name, room_type, rooms, check_in, check_out, night_price, confirmed)
+  VALUES (?, '三亚亚特兰蒂斯酒店', '海景双床房', 9, '2026-09-25', '2026-09-29', 680, 0)`).run(t3);
+
+console.log('种子数据已写入：2 个产品、3 个团队、38 名游客、5 家供应商、7 条采购资源及 8 条资源池占用（含待确认/已确认/停售/超时/快照偏离等预警场景）');

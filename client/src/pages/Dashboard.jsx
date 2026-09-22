@@ -53,6 +53,34 @@ export default function Dashboard() {
         <div><span>预估毛利</span><strong>{stats ? yuan(stats.finance.grossProfit) : '—'}</strong></div>
       </div>
 
+      {stats && (stats.warnings['高'] + stats.warnings['中'] + stats.warnings['低'] > 0) && (
+        <a href="#/warnings" className={`warn-banner ${stats.warnings['高'] > 0 ? 'is-high' : ''}`}>
+          <span className="warn-banner-icon">🚨</span>
+          <div className="warn-banner-text">
+            <strong>采购资源预警</strong>
+            <span>
+              {stats.warnings['高'] > 0 && <em className="text-red">高风险 {stats.warnings['高']} 条</em>}
+              {stats.warnings['高'] > 0 && (stats.warnings['中'] > 0 || stats.warnings['低'] > 0) && ' · '}
+              {stats.warnings['中'] > 0 && <em className="text-orange">中风险 {stats.warnings['中']} 条</em>}
+              {stats.warnings['中'] > 0 && stats.warnings['低'] > 0 && ' · '}
+              {stats.warnings['低'] > 0 && <em>低风险 {stats.warnings['低']} 条</em>}
+              ，点击进入预警中心处理
+            </span>
+          </div>
+          <span className="warn-banner-go">查看 →</span>
+        </a>
+      )}
+      {stats && (stats.warnings['高'] + stats.warnings['中'] + stats.warnings['低'] === 0) && (
+        <a href="#/warnings" className="warn-banner is-ok">
+          <span className="warn-banner-icon">✅</span>
+          <div className="warn-banner-text">
+            <strong>采购资源预警中心</strong>
+            <span>未来 60 天暂无库存与供应商风险，点击查看详情</span>
+          </div>
+          <span className="warn-banner-go">查看 →</span>
+        </a>
+      )}
+
       <h2 className="section-title">收客中的团队</h2>
       <div className="card">
         {open.length === 0 ? <div className="empty">📭 暂没收客中的团队，点击右上角「创建团队」开始</div> : (

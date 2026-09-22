@@ -5,6 +5,7 @@
   "description": "旅行社组团与计调操作平台",
   "scripts": {
     "install:all": "npm install && npm --prefix client install",
+    "start:all": "bash ./start.sh",
     "dev": "concurrently -n server,web -c green,cyan \"npm run dev:server\" \"npm run dev:web\"",
     "dev:server": "node server/index.js",
     "dev:web": "npm --prefix client run dev",

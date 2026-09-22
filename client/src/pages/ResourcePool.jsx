@@ -206,6 +206,18 @@ export default function ResourcePool() {
   useEffect(() => { loadResources(); }, [typeFilter, q]);
   useEffect(() => { loadSuppliers(); }, []);
 
+  // 从预警中心跳转：#/resources?resource=123 → 自动打开该资源余量/来源弹窗
+  useEffect(() => {
+    const openLinked = (list) => {
+      const rid = new URLSearchParams((window.location.hash.split('?')[1] || '')).get('resource');
+      if (rid && list.some(r => String(r.id) === String(rid))) {
+        setDetail(list.find(r => String(r.id) === String(rid)));
+        history.replaceState(null, '', '#/resources');
+      }
+    };
+    api.get('/resources').then(openLinked).catch(() => {});
+  }, []);
+
   const delResource = async (r) => {
     if (!confirm(`删除资源「${r.name}」？\n将自动释放其下全部有效占用（${r.availability.held} ${r.type === '航班' ? '座' : r.type === '酒店' ? '间' : '团'}），且不可恢复。`)) return;
     try {
