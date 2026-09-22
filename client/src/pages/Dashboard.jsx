@@ -5,10 +5,12 @@ import { StatusBadge } from '../components/ui.jsx';
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [tours, setTours] = useState([]);
+  const [alertSum, setAlertSum] = useState(null);
 
   useEffect(() => {
     api.get('/stats').then(setStats).catch(() => {});
     api.get('/tours').then(setTours).catch(() => {});
+    api.get('/alerts/summary').then(setAlertSum).catch(() => {});
   }, []);
 
   const open = tours.filter(t => t.status === '收客中');
@@ -52,6 +54,19 @@ export default function Dashboard() {
         <div className="strip-sep">=</div>
         <div><span>预估毛利</span><strong>{stats ? yuan(stats.finance.grossProfit) : '—'}</strong></div>
       </div>
+
+      {alertSum && alertSum.summary.total > 0 && (
+        <a className={`alert-strip ${alertSum.summary.by_level['高'] > 0 ? 'alert-strip-high' : 'alert-strip-mid'}`} href="#/alerts">
+          <span className="alert-strip-icon">🚨</span>
+          <span>采购资源预警：</span>
+          <strong className="text-red">高 {alertSum.summary.by_level['高']}</strong>
+          <span className="strip-sep">·</span>
+          <strong>中 {alertSum.summary.by_level['中']}</strong>
+          <span className="strip-sep">·</span>
+          <strong>低 {alertSum.summary.by_level['低']}</strong>
+          <span className="alert-strip-more">进入预警中心处理 →</span>
+        </a>
+      )}
 
       <h2 className="section-title">收客中的团队</h2>
       <div className="card">

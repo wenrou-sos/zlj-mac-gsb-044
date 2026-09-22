@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('./db');
 const { validIdCard, validPhone, calcFinance, generateTourCode, nightsBetween } = require('./helpers');
 const inv = require('./inventory');
+const alerts = require('./alerts');
 
 const router = express.Router();
 
@@ -35,6 +36,19 @@ router.get('/stats', (req, res) => {
       return { revenue, cost, grossProfit: Math.round((revenue - cost) * 100) / 100 };
     })()
   });
+});
+
+/* ---------------- 采购资源预警中心（只读扫描，复用余量/财务计算） ---------------- */
+// 筛选参数：level(高/中/低) kind type(航班/酒店/地接) supplier_id from to
+// 规则参数：days pending_hours depart_within depart_urgent deviation_pct low_stock_pct
+router.get('/alerts', (req, res) => {
+  res.json(alerts.computeAlerts(req.query));
+});
+
+// 轻量汇总：工作台角标/横幅用（不返回明细）
+router.get('/alerts/summary', (req, res) => {
+  const r = alerts.computeAlerts(req.query);
+  res.json({ generated_at: r.generated_at, params: r.params, summary: r.summary });
 });
 
 /* ---------------- 旅游产品 ---------------- */

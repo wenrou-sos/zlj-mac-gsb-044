@@ -185,7 +185,7 @@ function DetailModal({ resource, onClose, changed }) {
 }
 
 /* ---------------- 主页面 ---------------- */
-export default function ResourcePool() {
+export default function ResourcePool({ focusId }) {
   const toast = useToast();
   const [tab, setTab] = useState('resources');
   const [resources, setResources] = useState([]);
@@ -205,6 +205,11 @@ export default function ResourcePool() {
   const loadSuppliers = () => api.get('/suppliers').then(setSuppliers).catch(e => toast(e.message, 'error'));
   useEffect(() => { loadResources(); }, [typeFilter, q]);
   useEffect(() => { loadSuppliers(); }, []);
+
+  // 从预警中心等入口跳转 #/resources/:id 时，直接打开该资源的余量/来源详情
+  useEffect(() => {
+    if (focusId) setDetail({ id: Number(focusId) });
+  }, [focusId]);
 
   const delResource = async (r) => {
     if (!confirm(`删除资源「${r.name}」？\n将自动释放其下全部有效占用（${r.availability.held} ${r.type === '航班' ? '座' : r.type === '酒店' ? '间' : '团'}），且不可恢复。`)) return;

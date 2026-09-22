@@ -354,3 +354,37 @@ textarea.input { resize: vertical; }
 .released-box { margin-top: 10px; border-top: 1px dashed var(--line); padding-top: 8px; }
 .released-box summary { cursor: pointer; font-size: 12.5px; color: var(--ink-3); padding: 4px 0; }
 
+/* ---------- 采购资源预警中心 ---------- */
+.text-orange { color: var(--orange) !important; }
+.stat-red { border-color: var(--red); }
+
+.alert-strip {
+  display: flex; align-items: center; gap: 10px; padding: 13px 20px; margin-bottom: 20px;
+  border-radius: var(--radius); font-size: 13.5px; box-shadow: var(--shadow); transition: .15s;
+}
+.alert-strip-high { background: #fef2f2; border: 1px solid #fecaca; color: #7f1d1d; }
+.alert-strip-high:hover { background: #fee2e2; }
+.alert-strip-mid { background: #fff7ed; border: 1px solid #fed7aa; color: #7c2d12; }
+.alert-strip-mid:hover { background: #ffedd5; }
+.alert-strip-icon { font-size: 18px; }
+.alert-strip strong { font-size: 15px; }
+.alert-strip-more { margin-left: auto; font-weight: 600; font-size: 13px; }
+
+.alert-stat { cursor: pointer; transition: .15s; }
+.alert-stat:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.alert-stat.is-on { outline: 2px solid var(--teal); outline-offset: 2px; }
+
+.filter-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 16px; }
+.filter-ctrl { width: auto; min-width: 150px; }
+.filter-date { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-3); white-space: nowrap; }
+.filter-date .input { width: 140px; }
+.filter-date-end { width: 140px; }
+.filter-sep { color: var(--ink-3); }
+
+.alert-title { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; flex-wrap: wrap; }
+.alert-title strong { font-size: 13.5px; }
+.alert-tip { font-size: 12px; color: var(--teal-dark); margin-top: 3px; }
+.alert-row td { vertical-align: top; }
+.alert-lv-high { background: linear-gradient(90deg, rgba(220,38,38,.045), transparent 40%); }
+.alert-lv-mid { background: linear-gradient(90deg, rgba(234,88,12,.04), transparent 40%); }
+

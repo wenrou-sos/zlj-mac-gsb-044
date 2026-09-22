@@ -1,6 +1,7 @@
 node_modules/
 data/
 tmp-test/
+tmp-test-alerts/
 client/dist/
 *.log
 .DS_Store

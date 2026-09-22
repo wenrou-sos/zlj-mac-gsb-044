@@ -178,4 +178,22 @@ inv.createAllocationTxn({
   start_date: '2026-10-01', end_date: '2026-10-02', create_booking: 0, remarks: '团1加房'
 });
 
-console.log('种子数据已写入：2 个产品、2 个团队、37 名游客、5 家供应商、6 条采购资源及 7 条资源池占用（含待确认/已确认）');
+/* ================= 预警中心演示场景 ================= */
+// ① 待确认超时：团2地接占位的创建时间回拨 2 天（>24h 未确认将触发预警）
+db.prepare("UPDATE resource_allocations SET created_at=datetime('now','localtime','-2 days') WHERE resource_id=? AND status='待确认'").run(resLocal);
+// ② 成本快照偏离：团2去程按 520 确认后，供应商调价至 590（+13.5%，快照仍锁定 520）
+db.prepare('UPDATE resources SET unit_price=590 WHERE id=?').run(resFlightGo);
+// ③ 停售仍有占用：回程航班 CZ3870 停售，但团2 仍有 20 座待确认占用
+db.prepare("UPDATE resources SET status='停售' WHERE id=?").run(resFlightBack);
+// ④ 临近出发未确认完整：3 天后出发的三亚团，航班待确认、酒店/地接未安排
+const { generateTourCode } = require('./helpers');
+const localDate = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+const soonD = new Date(); soonD.setDate(soonD.getDate() + 3);
+const backD = new Date(); backD.setDate(backD.getDate() + 7);
+const soonStr = localDate(soonD);
+const t3 = insT.run(generateTourCode(db, soonStr), p2, soonStr, localDate(backD), 16, '收客中', '周敏').lastInsertRowid;
+insTr.run(t3, '孙国庆', '310101199003074511', '13911110001', '双人房', '', 2880);
+insTr.run(t3, '林假期', '310101199205123422', '13911110002', '双人房', '素食', 2880);
+insF.run(t3, '去程', 'CZ3869', soonStr, '杭州萧山 → 三亚凤凰', 6, 520, 0); // 航班待确认
+
+console.log('种子数据已写入：2 个产品、3 个团队、39 名游客、5 家供应商、6 条采购资源及 7 条资源池占用（含待确认/已确认），含预警中心演示场景');
